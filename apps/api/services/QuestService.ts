@@ -2,7 +2,6 @@ import { QuestRepo } from "@/repos/quest-repo";
 import { IQuestInsert, IQuestUpdate } from "@/types/database";
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import { get } from "http";
 
 export function createQuestService(userId: string, client: SupabaseClient) {
   const questRepo = new QuestRepo(client);
