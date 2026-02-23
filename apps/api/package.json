@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "get-token": "node scripts/get-test-token.js"
+    "get-token": "node scripts/get-test-token.js",
+    "prepare": "husky",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -20,8 +23,15 @@
     "@types/react": "^19",
     "eslint": "^9.39.3",
     "globals": "^17.3.0",
+    "husky": "^9.1.7",
     "jiti": "^2.6.1",
+    "lint-staged": "^16.2.7",
     "typescript": "^5",
     "typescript-eslint": "^8.56.0"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint"
+    ]
   }
 }
