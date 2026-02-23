@@ -11,7 +11,13 @@
   },
   "lint-staged": {
     "apps/api/**/*.{js,jsx,ts,tsx,mts,cts}": [
-      "eslint"
+      "npx --prefix apps/api eslint --config apps/api/eslint.config.js"
+    ],
+    "apps/agent/**/*.{js,jsx,ts,tsx,mts,cts}": [
+      "npx --prefix apps/agent eslint --config apps/agent/eslint.config.js"
+    ],
+    "apps/mobile/**/*.{js,jsx,ts,tsx,mts,cts}": [
+      "npx --prefix apps/mobile eslint --config apps/mobile/eslint.config.js"
     ]
   }
 }
