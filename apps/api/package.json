@@ -15,8 +15,13 @@
     "next": "16.1.6"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.3",
     "@types/node": "^20",
     "@types/react": "^19",
-    "typescript": "^5"
+    "eslint": "^9.39.3",
+    "globals": "^17.3.0",
+    "jiti": "^2.6.1",
+    "typescript": "^5",
+    "typescript-eslint": "^8.56.0"
   }
 }
