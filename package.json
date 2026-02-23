@@ -1,0 +1,17 @@
+{
+  "name": "life-quest",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "apps/api/**/*.{js,jsx,ts,tsx,mts,cts}": [
+      "eslint"
+    ]
+  }
+}
