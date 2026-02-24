@@ -1,5 +1,5 @@
 import { QuestRepo } from "@/repos/quest-repo";
-import { IQuest, IQuestInsert, IQuestUpdate } from "@/types/database";
+import { IQuest, IQuestInsert, IQuestUpdate } from "@/types/IQuest";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 

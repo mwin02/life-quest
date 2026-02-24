@@ -1,4 +1,4 @@
-import { IQuest, IQuestInsert, IQuestUpdate } from "@/types/database";
+import { IQuest, IQuestInsert, IQuestUpdate } from "@/types/IQuest";
 import { BaseRepo } from "./base-repo";
 import { SupabaseClient } from "@supabase/supabase-js";
 

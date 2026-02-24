@@ -3,7 +3,7 @@ import {
   IAdventure,
   IAdventureInsert,
   IAdventureUpdate,
-} from "@/types/database";
+} from "@/types/IAdventure";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 
