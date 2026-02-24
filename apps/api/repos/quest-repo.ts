@@ -4,7 +4,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 export class QuestRepo extends BaseRepo<IQuest, IQuestInsert, IQuestUpdate> {
   constructor(client: SupabaseClient) {
-    super(client, "adventures");
+    super(client, "quests");
   }
 
   async findByUser(userId: string): Promise<IQuest[]> {
@@ -14,8 +14,8 @@ export class QuestRepo extends BaseRepo<IQuest, IQuestInsert, IQuestUpdate> {
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    if (error)
-      throw new Error(`[adventures] findByUser failed: ${error.message}`);
+    if (error) throw new Error(`[quests] findByUser failed: ${error.message}`);
+
     return data as IQuest[];
   }
 
@@ -27,7 +27,8 @@ export class QuestRepo extends BaseRepo<IQuest, IQuestInsert, IQuestUpdate> {
       .order("created_at", { ascending: false });
 
     if (error)
-      throw new Error(`[adventures] findByAdventure failed: ${error.message}`);
+      throw new Error(`[quests] findByAdventure failed: ${error.message}`);
+
     return data as IQuest[];
   }
 }
