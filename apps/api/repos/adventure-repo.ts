@@ -1,10 +1,10 @@
+import { SupabaseClient } from "@supabase/supabase-js";
+import { BaseRepo } from "./base-repo";
 import {
   IAdventure,
   IAdventureInsert,
   IAdventureUpdate,
-} from "@/types/database";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { BaseRepo } from "./base-repo";
+} from "@/types/IAdventure";
 
 export class AdventureRepo extends BaseRepo<
   IAdventure,
