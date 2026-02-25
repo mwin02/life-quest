@@ -1,16 +1,16 @@
-export interface IQuest {
+export type RewardStatus = "claimed" | "unredeemed" | "hidden";
+
+export interface IReward {
   id: string;
   created_at: string;
   user_id: string;
-  adventure_id: string;
   name: string;
   description?: string;
-  start_date: string;
-  end_date: string;
-  reward: number;
+  cost: number;
+  status: RewardStatus;
 }
 
-export function isIQuest(value: unknown): value is IQuest {
+export function isIReward(value: unknown): value is IReward {
   if (typeof value !== "object" || value === null) {
     throw new Error(
       `Expected an object, got ${value === null ? "null" : typeof value}`,
@@ -28,12 +28,12 @@ export function isIQuest(value: unknown): value is IQuest {
     );
   }
 
-  isIQuestInsert(value);
+  isIRewardInsert(value);
 
   return true;
 }
 
-export function isIQuestInsert(value: unknown): value is IQuestInsert {
+export function isIRewardInsert(value: unknown): value is IRewardInsert {
   if (typeof value !== "object" || value === null) {
     throw new Error(
       `Expected an object, got ${value === null ? "null" : typeof value}`,
@@ -47,11 +47,6 @@ export function isIQuestInsert(value: unknown): value is IQuestInsert {
       `Expected user_id to be a string, got ${typeof obj.user_id}`,
     );
   }
-  if (typeof obj.adventure_id !== "string") {
-    throw new Error(
-      `Expected adventure_id to be a string, got ${typeof obj.adventure_id}`,
-    );
-  }
   if (typeof obj.name !== "string") {
     throw new Error(`Expected name to be a string, got ${typeof obj.name}`);
   }
@@ -60,22 +55,19 @@ export function isIQuestInsert(value: unknown): value is IQuestInsert {
       `Expected description to be a string or undefined, got ${typeof obj.description}`,
     );
   }
-  if (typeof obj.start_date !== "string") {
-    throw new Error(
-      `Expected start_date to be a string, got ${typeof obj.start_date}`,
-    );
+  if (typeof obj.cost !== "number") {
+    throw new Error(`Expected cost to be a number, got ${typeof obj.cost}`);
   }
-  if (typeof obj.end_date !== "string") {
+
+  const validStatuses: RewardStatus[] = ["claimed", "unredeemed", "hidden"];
+  if (!validStatuses.includes(obj.status as RewardStatus)) {
     throw new Error(
-      `Expected end_date to be a string, got ${typeof obj.end_date}`,
+      `Expected status to be one of ${validStatuses.join(", ")}, got ${obj.status}`,
     );
-  }
-  if (typeof obj.reward !== "number") {
-    throw new Error(`Expected reward to be a number, got ${typeof obj.reward}`);
   }
 
   return true;
 }
 
-export type IQuestInsert = Omit<IQuest, "id" | "created_at">;
-export type IQuestUpdate = Partial<IQuestInsert>;
+export type IRewardInsert = Omit<IReward, "id" | "created_at">;
+export type IRewardUpdate = Partial<IRewardInsert>;
