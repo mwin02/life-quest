@@ -1,5 +1,5 @@
 import { CoinLedgerRepo } from "@/repos/coin-ledger-repo";
-import { ICoinLedger } from "@/types/ICoinLedger";
+import { ICoinLedger, ICoinLedgerInsert } from "@/types/ICoinLedger";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export function createCoinLedgerService(
@@ -19,7 +19,7 @@ export function createCoinLedgerService(
     },
 
     async addToLedger(
-      input: Omit<ICoinLedger, "user_id">,
+      input: Omit<ICoinLedgerInsert, "user_id">,
     ): Promise<ICoinLedger> {
       // Force the user_id to be the authenticated user
       return rewardRepo.create({ ...input, user_id: userId });

@@ -1,3 +1,5 @@
+export type QuestStatus = "active" | "finished" | "inactive";
+
 export interface IQuest {
   id: string;
   created_at: string;
@@ -8,6 +10,7 @@ export interface IQuest {
   start_date: string;
   end_date: string;
   reward: number;
+  status: QuestStatus;
 }
 
 export function isIQuest(value: unknown): value is IQuest {
