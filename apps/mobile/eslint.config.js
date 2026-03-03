@@ -1,10 +1,19 @@
-// https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
-const expoConfig = require('eslint-config-expo/flat');
+const path = require("path");
+const { defineConfig } = require("eslint/config");
+const expoConfig = require("eslint-config-expo/flat");
 
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*'],
+    ignores: ["dist/*", "./eslint.config.js"],
+  },
+  {
+    settings: {
+      "import/resolver": {
+        typescript: {
+          project: path.resolve(__dirname, "./tsconfig.json"),
+        },
+      },
+    },
   },
 ]);
