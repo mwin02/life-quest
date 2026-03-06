@@ -19,6 +19,7 @@ import {
 } from "@expo-google-fonts/nunito";
 
 import { Colors } from "../constants/theme";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Prevent the splash screen from auto-hiding before fonts load
 SplashScreen.preventAutoHideAsync();
@@ -48,17 +49,19 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.bgDark} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: Colors.bgDark },
-          animation: "slide_from_right",
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="register" />
-      </Stack>
+      <AuthProvider>
+        <StatusBar barStyle="light-content" backgroundColor={Colors.bgDark} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: Colors.bgDark },
+            animation: "slide_from_right",
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="register" />
+        </Stack>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
