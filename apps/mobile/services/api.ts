@@ -8,7 +8,7 @@ interface RequestOptions {
   token?: string | null;
 }
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   data: T | null;
   error: string | null;
   status: number;
