@@ -33,10 +33,11 @@ export abstract class AuthService {
   static async register(
     email: string,
     password: string,
+    name: string,
   ): Promise<{ user: User | null; error: string | null }> {
     const { data, error } = await apiRequest<AuthResponse>("/auth/register", {
       method: "POST",
-      body: { email, password },
+      body: { email, password, name },
     });
 
     if (error || !data) {

@@ -19,7 +19,11 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string) => Promise<string | null>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<string | null>;
   logout: () => Promise<void>;
 }
 
@@ -52,8 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const handleRegister = useCallback(
-    async (email: string, password: string): Promise<string | null> => {
-      const { user, error } = await AuthService.register(email, password);
+    async (
+      email: string,
+      password: string,
+      name: string,
+    ): Promise<string | null> => {
+      const { user, error } = await AuthService.register(email, password, name);
       if (error) return error;
       // user will be set but session may be null if email confirmation
       // is required — in that case user stays null in context until they

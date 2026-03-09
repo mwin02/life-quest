@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Colors, Fonts, BorderRadius, Spacing } from "../../constants/theme";
 import GoldButton from "../../components/GoldButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const avatars = [
   { icon: "🧙", bg: "#1E2A45" },
@@ -24,20 +25,32 @@ const avatars = [
 export default function RegisterScreen() {
   const router = useRouter();
   const { adventure = "" } = useLocalSearchParams<{ adventure?: string }>();
-
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(1);
 
   const handleCreateHero = () => {
-    router.push({
-      pathname: "/agent-chat",
-      params: {
-        adventure,
-        heroName: name,
-        avatar: avatars[selectedAvatar].icon,
-      },
+    if (!name || !email || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    register(email, password, name).then((error) => {
+      if (error) {
+        alert(error);
+        return;
+      }
+      // Registration successful, navigate to chat with params
+      router.push({
+        pathname: "/agent-chat",
+        params: {
+          adventure,
+          heroName: name,
+          avatar: avatars[selectedAvatar].icon,
+        },
+      });
     });
   };
 
