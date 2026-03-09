@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { createUserService } from "@/services/UserService";
 
 export async function GET(request: NextRequest) {
   const { user, supabase, error } = await getAuthenticatedUser(request);
@@ -9,11 +10,11 @@ export async function GET(request: NextRequest) {
       { status: 401 },
     );
   }
+  const userService = createUserService(user.id, supabase);
+  const userProfile = await userService.getMyProfile();
   return NextResponse.json({
     user: {
-      id: user.id,
-      email: user.email,
-      created_at: user.created_at,
+      ...userProfile,
     },
   });
 }
