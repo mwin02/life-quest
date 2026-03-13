@@ -15,6 +15,13 @@ export function createAdventureService(userId: string, client: SupabaseClient) {
       return adventureRepo.findByUser(userId);
     },
 
+    async getAdventure(adventureId: string): Promise<IAdventure> {
+      const adventure = await adventureRepo.findById(adventureId);
+      if (!adventure) throw new Error("adventure not found");
+      if (adventure.user_id !== userId) throw new Error("Forbidden");
+      return adventure;
+    },
+
     async createAdventure(
       input: Omit<IAdventureInsert, "user_id">,
     ): Promise<IAdventure> {

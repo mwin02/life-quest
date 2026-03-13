@@ -13,6 +13,13 @@ export function createQuestService(userId: string, client: SupabaseClient) {
       return questRepo.findByUser(userId);
     },
 
+    async getQuest(questId: string): Promise<IQuest> {
+      const quest = await questRepo.findById(questId);
+      if (!quest) throw new Error("Quest not found");
+      if (quest.user_id !== userId) throw new Error("Forbidden");
+      return quest;
+    },
+
     async getQuestsByAdventure(adventureId: string): Promise<IQuest[]> {
       return questRepo.findByAdventure(adventureId);
     },
