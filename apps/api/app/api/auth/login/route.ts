@@ -1,11 +1,11 @@
-import { createNewClient } from "@/lib/supabase/server";
+import { createAdminClient, createNewClient } from "@/lib/supabase/server";
+import { createUserService } from "@/services/UserService";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    // --- Validation ---
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required." },
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
+    const adminClient = createAdminClient();
+    const userService = createUserService(data.user.id, adminClient);
+    const userProfile = await userService.getMyProfile();
+
     return NextResponse.json(
       {
         session: {
@@ -31,10 +35,7 @@ export async function POST(request: NextRequest) {
           refresh_token: data.session.refresh_token,
           expires_at: data.session.expires_at,
         },
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-        },
+        user: userProfile,
       },
       { status: 200 },
     );

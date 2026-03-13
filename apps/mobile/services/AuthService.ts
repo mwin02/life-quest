@@ -5,6 +5,7 @@ import {
   clearTokens,
   getAccessToken,
 } from "./token-storage";
+import type { IUser } from "@/types/IUser";
 
 // ---- Types ----
 
@@ -14,19 +15,14 @@ interface Session {
   expires_at: number;
 }
 
-interface User {
-  id: string;
-  email: string;
-}
-
 interface AuthResponse {
   message?: string;
   session?: Session;
-  user: User;
+  user: IUser;
 }
 
 interface MeResponse {
-  user: User;
+  user: IUser;
 }
 
 export abstract class AuthService {
@@ -34,7 +30,7 @@ export abstract class AuthService {
     email: string,
     password: string,
     name: string,
-  ): Promise<{ user: User | null; error: string | null }> {
+  ): Promise<{ user: IUser | null; error: string | null }> {
     const { data, error } = await apiRequest<AuthResponse>("/auth/register", {
       method: "POST",
       body: { email, password, name },
@@ -56,7 +52,7 @@ export abstract class AuthService {
   static async login(
     email: string,
     password: string,
-  ): Promise<{ user: User | null; error: string | null }> {
+  ): Promise<{ user: IUser | null; error: string | null }> {
     const { data, error } = await apiRequest<AuthResponse>("/auth/login", {
       method: "POST",
       body: { email, password },
@@ -92,7 +88,7 @@ export abstract class AuthService {
   }
 
   static async getMe(): Promise<{
-    user: User | null;
+    user: IUser | null;
     error: string | null;
   }> {
     const token = await getAccessToken();

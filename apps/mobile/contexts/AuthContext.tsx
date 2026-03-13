@@ -1,4 +1,5 @@
 import { AuthService } from "@/services/AuthService";
+import { IUser } from "@/types/IUser";
 import React, {
   createContext,
   useContext,
@@ -9,13 +10,8 @@ import React, {
 
 // ---- Types ----
 
-interface User {
-  id: string;
-  email: string;
-}
-
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<string | null>;
@@ -32,7 +28,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // On mount, check if we already have a valid session.
