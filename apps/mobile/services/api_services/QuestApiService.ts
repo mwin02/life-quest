@@ -10,6 +10,11 @@ interface QuestsResponse {
   quests: IQuest[];
 }
 
+interface QuestResponse {
+  success: boolean;
+  quest: IQuest;
+}
+
 interface QuestCreateResponse {
   success: boolean;
   quest: IQuest;
@@ -23,6 +28,10 @@ interface QuestCompleteResponse {
 export class QuestApiService extends BaseApiService {
   async getAll() {
     return this.request<QuestsResponse>("/quests", {});
+  }
+
+  async getById(questId: string) {
+    return this.request<QuestResponse>(`/quests/${questId}`, {});
   }
 
   async create(quest: IQuestInsert) {
