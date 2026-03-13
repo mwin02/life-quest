@@ -1,10 +1,43 @@
 export function extractTokenFromRequest(request: Request): string | null {
-    const authHeader = request.headers.get('Authorization')
+  const authHeader = request.headers.get("Authorization");
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return null
-    }
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
 
-    const token = authHeader.substring(7)
-    return token
-}   
+  const token = authHeader.substring(7);
+  return token;
+}
+
+export function validatePassword(password: string): {
+  valid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long");
+  }
+
+  if (password.length > 128) {
+    errors.push("Password must not exceed 128 characters");
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+
+  if (!/[0-9]/.test(password)) {
+    errors.push("Password must contain at least one number");
+  }
+
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(password)) {
+    errors.push("Password must contain at least one special character");
+  }
+
+  return { valid: errors.length === 0, errors };
+}
