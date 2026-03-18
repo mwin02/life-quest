@@ -35,7 +35,7 @@ export function createRewardService(userId: string, client: SupabaseClient) {
       const reward = await rewardRepo.findById(rewardId);
       if (!reward) throw new Error("Reward not found");
       if (reward.user_id !== userId) throw new Error("Forbidden");
-      if (reward.status == "claimed")
+      if (reward.status == "purchased")
         throw new Error("Reward already redeemed");
       const ledgerService = createCoinLedgerService(userId, client);
       const balance = await ledgerService.getCurrentBalance();
@@ -43,9 +43,10 @@ export function createRewardService(userId: string, client: SupabaseClient) {
         throw new Error("Insufficient balance to redeem reward");
       await ledgerService.addToLedger({
         amount: -reward.cost,
+        adventure_id: reward.adventure_id,
         meta: { reason: "redeemed_reward", reward_id: reward.id },
       });
-      return rewardRepo.update(rewardId, { status: "claimed" });
+      return rewardRepo.update(rewardId, { status: "purchased" });
     },
 
     async deleteReward(rewardId: string): Promise<void> {
