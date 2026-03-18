@@ -8,6 +8,7 @@ export interface ICoinLedger {
   id: string;
   created_at: string;
   user_id: string;
+  adventure_id: string;
   amount: number;
   meta: CoinLedgerMeta;
 }
