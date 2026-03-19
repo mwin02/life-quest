@@ -1,6 +1,6 @@
 export type QuestStatus = "active" | "completed" | "abandoned" | "cancelled";
 
-interface IQuestBase {
+export interface IQuest {
   id: string;
   created_at: string;
   user_id: string;
@@ -8,23 +8,12 @@ interface IQuestBase {
   name: string;
   description?: string;
   start_date: string;
+  type: "progressive" | "repeatable";
   end_date: string;
   reward: number;
   status: QuestStatus;
+  repeat_period?: number; // in days, only for repeatable quests
 }
-
-interface IProgressiveQuest extends IQuestBase {
-  type: "progressive";
-}
-
-interface IRepeatableQuest extends IQuestBase {
-  type: "repeatable";
-  /** Number of days before the quest resets. 1 = daily, 7 = weekly, etc. */
-  repeat_period: number;
-}
-
-export type IQuest = IProgressiveQuest | IRepeatableQuest;
-
 export function isIQuest(value: unknown): value is IQuest {
   if (typeof value !== "object" || value === null) {
     throw new Error(
@@ -128,4 +117,4 @@ export function isIQuestInsert(value: unknown): value is IQuestInsert {
 }
 
 export type IQuestInsert = Omit<IQuest, "id" | "created_at">;
-export type IQuestUpdate = Partial<IQuestInsert>;
+export type IQuestUpdate = Partial<IQuest>;
