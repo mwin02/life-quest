@@ -6,6 +6,8 @@ import { createQuestService } from "@/services/QuestService";
 import { createRewardService } from "@/services/RewardService";
 import { createCoinLedgerService } from "@/services/CoinLedgerService";
 import { createUserService } from "@/services/UserService";
+import { createStreakService } from "@/services/StreakService";
+import { createSubtaskService } from "@/services/SubtaskService";
 
 const createAdventureSchema = z.object({
   name: z.string().describe("Short, motivating name for the goal"),
@@ -21,14 +23,26 @@ const createAdventureSchema = z.object({
 const createQuestSchema = z.object({
   name: z.string().describe("Clear, action-oriented task name"),
   description: z.string().optional(),
+  type: z
+    .enum(["progressive", "repeatable"])
+    .describe("progressive = multi-step project, repeatable = daily habit"),
+  repeat_period: z
+    .number()
+    .optional()
+    .describe(
+      "For repeatable quests only: number of days before it can be completed again (e.g. 1 for daily)",
+    ),
   start_date: z.string().describe("ISO date string"),
   end_date: z
     .string()
-    .describe("ISO date string — keep tasks short (days, not weeks)"),
+    .describe(
+      "ISO date string — keep progressive quests short (days to weeks, not months)",
+    ),
   reward: z
     .number()
     .describe(
-      "Coin reward: ~10-30 for small tasks, ~50-100 for medium, ~150-300 for milestones",
+      "Progressive: 10-300 coins based on effort (awarded on full completion only). " +
+        "Repeatable: 5-15 coins base reward per completion.",
     ),
 });
 
@@ -37,13 +51,19 @@ const updateQuestSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   start_date: z.string().optional().describe("ISO date string"),
+  repeat_period: z.number().optional().describe("Only for repeatable quests"),
   end_date: z.string().optional().describe("ISO date string"),
   reward: z.number().optional(),
-  status: z.enum(["active", "inactive", "finished"]).optional(),
+  status: z.enum(["active", "completed", "abandoned", "cancelled"]).optional(),
 });
 
-const completeQuestSchema = z.object({
-  quest_id: z.string(),
+const createSubtaskSchema = z.object({
+  quest_id: z
+    .string()
+    .describe("The progressive quest this subtask belongs to"),
+  name: z.string().describe("Specific, completable action"),
+  description: z.string().optional(),
+  order: z.number().describe("Sequence position within the quest (1-based)"),
 });
 
 const createRewardSchema = z.object({
@@ -52,8 +72,11 @@ const createRewardSchema = z.object({
   cost: z
     .number()
     .describe(
-      "Coin cost to redeem — should feel meaningful relative to the work required to earn it",
+      "Coin cost — priced so total rewards = 130-150% of total earnable coins",
     ),
+  size: z
+    .enum(["small", "medium", "large"])
+    .describe("Reward tier: small (treat), medium (event), large (milestone)"),
 });
 
 export function createAgentTools(userId: string, supabase: SupabaseClient) {
@@ -62,6 +85,8 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
   const rewardService = createRewardService(userId, supabase);
   const ledgerService = createCoinLedgerService(userId, supabase);
   const userService = createUserService(userId, supabase);
+  const subtaskService = createSubtaskService(userId, supabase);
+  const streakService = createStreakService(userId, supabase);
 
   return {
     get_user_context: tool({
@@ -82,7 +107,29 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
           ledgerService.getCurrentBalance(),
         ]);
 
-        return { profile, active_adventure: { adventure, quests, rewards, balance } };
+        const enrichedQuests = await Promise.all(
+          quests.map(async (quest) => {
+            if (quest.type === "progressive") {
+              const subtasks = await subtaskService.getSubtasks(quest.id);
+              return { ...quest, subtasks };
+            } else {
+              const streakState = await streakService.getCurrentStreak(
+                quest.id,
+              );
+              return { ...quest, streak: streakState };
+            }
+          }),
+        );
+
+        return {
+          profile,
+          active_adventure: {
+            adventure,
+            quests: enrichedQuests,
+            rewards,
+            balance,
+          },
+        };
       },
     }),
 
@@ -95,20 +142,29 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
         description,
         end_date,
       }: z.infer<typeof createAdventureSchema>) => {
-        const adventure = await adventureService.createAdventure({ name, description, end_date });
-        await userService.updateMyProfile({ current_adventure_id: adventure.id });
+        const adventure = await adventureService.createAdventure({
+          name,
+          description,
+          end_date,
+        });
+        await userService.updateMyProfile({
+          current_adventure_id: adventure.id,
+        });
         return adventure;
       },
     }),
 
     create_quest: tool({
       description:
-        "Create a quest within the user's active adventure. Only call this when the user has an active adventure and has agreed on the details.",
+        "Create a quest within the active adventure. For progressive quests, follow up with create_subtask. " +
+        "For repeatable quests, the quest itself defines the daily habit.",
       inputSchema: createQuestSchema,
       execute: async ({
         name,
         description,
+        type,
         start_date,
+        repeat_period,
         end_date,
         reward,
       }: z.infer<typeof createQuestSchema>) => {
@@ -120,8 +176,10 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
           adventure_id: profile.current_adventure_id,
           name,
           description,
+          type,
           start_date,
           end_date,
+          repeat_period,
           reward,
           status: "active",
         });
@@ -140,14 +198,31 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
       },
     }),
 
-    complete_quest: tool({
+    create_subtask: tool({
       description:
-        "Mark a quest as complete and award the user its coin reward. Only call this when the user confirms they finished the task.",
-      inputSchema: completeQuestSchema,
-      execute: async ({ quest_id }: z.infer<typeof completeQuestSchema>) => {
-        await questService.completeQuest(quest_id);
-        const new_balance = await ledgerService.getCurrentBalance();
-        return { success: true, new_balance };
+        "Add a subtask to a progressive quest. Subtasks are the daily unit of work. " +
+        "Create them in sequence order when setting up a progressive quest.",
+      inputSchema: createSubtaskSchema,
+      execute: async ({
+        quest_id,
+        name,
+        description,
+        order,
+      }: z.infer<typeof createSubtaskSchema>) => {
+        return subtaskService.createSubtask(quest_id, {
+          name,
+          description,
+          order,
+        });
+      },
+    }),
+
+    get_current_date: tool({
+      description:
+        "Get the current date as an ISO string. Use this for any date calculations or comparisons, never the system date, to ensure consistency with the user's timezone and avoid clock skew issues.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        return new Date().toISOString();
       },
     }),
 
@@ -159,12 +234,16 @@ export function createAgentTools(userId: string, supabase: SupabaseClient) {
         name,
         description,
         cost,
+        size,
       }: z.infer<typeof createRewardSchema>) => {
+        const profile = await userService.getMyProfile();
         return rewardService.createReward({
           name,
           description,
           cost,
-          status: "unredeemed",
+          status: "unpurchased",
+          size,
+          adventure_id: profile.current_adventure_id!,
         });
       },
     }),

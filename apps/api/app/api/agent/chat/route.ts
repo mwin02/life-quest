@@ -9,7 +9,10 @@ import { SYSTEM_PROMPT } from "@/lib/agent/system-prompt";
 export async function POST(request: Request) {
   const { user, supabase, error } = await getAuthenticatedUser(request);
   if (error || !user || !supabase) {
-    return NextResponse.json({ error: error || "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: error || "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   const { message } = await request.json();
@@ -29,11 +32,15 @@ export async function POST(request: Request) {
     system: SYSTEM_PROMPT,
     messages: [...history, userMessage],
     tools,
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(10),
     onFinish: async (event) => {
       // Collect all messages generated across every step (tool calls, tool results, final reply)
-      const responseMessages = event.steps.flatMap((step) => step.response.messages);
-      await conversationService.saveMessages(responseMessages as ModelMessage[]);
+      const responseMessages = event.steps.flatMap(
+        (step) => step.response.messages,
+      );
+      await conversationService.saveMessages(
+        responseMessages as ModelMessage[],
+      );
     },
   });
 
